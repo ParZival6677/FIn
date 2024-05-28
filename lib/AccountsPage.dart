@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'EditAccountsPage.dart';
 import 'database.dart';
+import 'Theme_provider.dart';
+import 'AppLocalizations.dart';
 
 class AccountsPage extends StatefulWidget {
   @override
@@ -8,7 +11,7 @@ class AccountsPage extends StatefulWidget {
 }
 
 class _AccountsPageState extends State<AccountsPage> {
-  late List<Map<String, dynamic>> _accountsList;
+  late List<Map<String, dynamic>> _accountsList = [];
   bool _excludeFromTotal = false;
 
   @override
@@ -38,9 +41,15 @@ class _AccountsPageState extends State<AccountsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Мои счета'),
+        title: Text(localizations!.myAccounts),
+        backgroundColor: theme.scaffoldBackgroundColor,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 7.0),
@@ -49,7 +58,12 @@ class _AccountsPageState extends State<AccountsPage> {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => EditAccountsPage()));
               },
               icon: Image.asset(
-                'assets/icons/edit-button.png',
+                isDarkMode
+                    ? 'assets/icons/edit-button-dark-theme.png'
+                    : 'assets/icons/edit-button.png',
+                width: 72.0,
+                height: 72.0,
+                scale: 0.9,
               ),
             ),
           ),
@@ -61,7 +75,7 @@ class _AccountsPageState extends State<AccountsPage> {
             margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Row(
@@ -74,10 +88,11 @@ class _AccountsPageState extends State<AccountsPage> {
                 ),
                 SizedBox(width: 10.0),
                 Text(
-                  'Итого',
+                  localizations.total,
                   style: TextStyle(
                     fontSize: 17.0,
                     fontWeight: FontWeight.bold,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                 ),
                 Spacer(),
@@ -86,30 +101,27 @@ class _AccountsPageState extends State<AccountsPage> {
                   style: TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 20.0),
-            color: Color(0xFFF2F2F2),
-            height: 1.0,
-          ),
-          Container(
             margin: EdgeInsets.symmetric(horizontal: 20.0,),
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Row(
               children: [
                 Text(
-                  'Включены в итог',
+                  localizations.includedInTotal,
                   style: TextStyle(
                     fontSize: 17.0,
                     fontWeight: FontWeight.bold,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                 ),
                 Spacer(),
@@ -118,17 +130,17 @@ class _AccountsPageState extends State<AccountsPage> {
           ),
           Container(
             margin: EdgeInsets.symmetric(horizontal: 20.0),
-            color: Color(0xFFF2F2F2),
+            color: theme.dividerColor,
             height: 1.0,
           ),
           Column(
             children: _accountsList.map((account) {
               if (!_excludeFromTotal) {
                 return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 20.0, ),
+                  margin: EdgeInsets.symmetric(horizontal: 20.0,),
                   padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Row(
@@ -145,6 +157,7 @@ class _AccountsPageState extends State<AccountsPage> {
                         style: TextStyle(
                           fontSize: 17.0,
                           fontWeight: FontWeight.bold,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                       Spacer(),
@@ -153,13 +166,14 @@ class _AccountsPageState extends State<AccountsPage> {
                         style: TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                     ],
                   ),
                 );
               } else {
-                return SizedBox(); // Если счет исключен из итога, возвращаем пустой виджет
+                return SizedBox();
               }
             }).toList(),
           ),

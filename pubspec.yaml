@@ -43,6 +43,9 @@ dependencies:
   libphonenumber: ^2.0.2
   equatable: ^2.0.5
   intl_phone_number_input: ^0.7.4
+  provider: ^6.1.2
+  easy_localization: ^3.0.7
+  localization: ^2.1.1
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +93,38 @@ flutter:
     - assets/icons/backspace-outline.png
     - assets/icons/radio-bottom.png
     - assets/icons/radio-bottom-active.png
+    - assets/icons/clipboard-outline-dark-theme.png
+    - assets/icons/home-outline-dark-theme.png
+    - assets/icons/person-outline-dark-theme.png
+    - assets/icons/wallet-outline-dark-theme.png
+    - assets/icons/eye-dark-theme.png
+    - assets/icons/eye-off-dark-theme.png
+    - assets/icons/notifications-dark-theme.png
+    - assets/icons/caret-down-dark-theme.png
+    - assets/icons/caret-up-outline-dark-theme.png
+    - assets/icons/trash-outline-dark-theme.png
+    - assets/icons/nalichka.png
+    - assets/icons/cash.png
+    - assets/icons/cash-outline.png
+    - assets/icons/education.png
+    - assets/icons/gifts.png
+    - assets/icons/apteka.png
+    - assets/icons/medicine.png
+    - assets/icons/remont.png
+    - assets/icons/strahovka.png
+    - assets/icons/totals.png
+    - assets/icons/trash-red-outline.png
+    - assets/icons/edit-button.png
+    - assets/icons/save-button.png
+    - assets/icons/switch-disabled.png
+    - assets/icons/switch-enabled.png
+    - assets/icons/arenda.png
+    - assets/icons/save-button-dark-theme.png
+    - assets/icons/edit-button-dark-theme.png
+    - assets/icons/cash-outline-dark-theme.png
+    - assets/icons/halyk-logo.png
+    - assets/icons/kaspi-logo.png
+    - assets/lang/
 
 
   # To add assets to your application, add an assets section, like this:

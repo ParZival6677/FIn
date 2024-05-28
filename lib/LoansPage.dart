@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'database.dart';
-
+import 'AppLocalizations.dart';
+import 'Theme_provider.dart';
 
 class LoansPage extends StatefulWidget {
   @override
@@ -11,7 +13,6 @@ class _LoansPageState extends State<LoansPage> {
   late TextEditingController _amountController;
   late TextEditingController _categoryController;
   late DatabaseHelper _databaseHelper;
-
 
   final List<String> categoryIconPaths = [
     'assets/icons/Thumbnail.png',
@@ -43,12 +44,18 @@ class _LoansPageState extends State<LoansPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Добавить кредит',
+          localizations!.addLoan,
           style: TextStyle(fontSize: 24.0),
         ),
+        backgroundColor: theme.scaffoldBackgroundColor,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,13 +66,13 @@ class _LoansPageState extends State<LoansPage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Row(
                 children: [
                   Image.asset(
-                    'assets/icons/cash-outline.png',
+                    isDarkMode ? 'assets/icons/cash-outline-dark-theme.png' : 'assets/icons/cash-outline.png',
                     width: 32.0,
                     height: 32.0,
                     scale: 0.8,
@@ -75,20 +82,20 @@ class _LoansPageState extends State<LoansPage> {
                     child: TextField(
                       controller: _amountController,
                       decoration: InputDecoration(
-                        hintText: 'Введите сумму',
+                        hintText: localizations.enterAmount,
                         hintStyle: TextStyle(
-                          color: Color(0xFF7F7F7F),
+                          color: theme.hintColor,
                           fontSize: 18.0,
                         ),
                         border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.dividerColor),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.dividerColor),
                         ),
                       ),
                       keyboardType: TextInputType.number,
-                      style: TextStyle(fontSize: 18.0),
+                      style: TextStyle(fontSize: 18.0, color: theme.textTheme.bodyLarge?.color),
                     ),
                   ),
                 ],
@@ -100,7 +107,7 @@ class _LoansPageState extends State<LoansPage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Row(
@@ -119,21 +126,21 @@ class _LoansPageState extends State<LoansPage> {
                     child: TextFormField(
                       controller: _categoryController,
                       decoration: InputDecoration(
-                        hintText: 'Введите категорию',
+                        hintText: localizations.enterCategory,
                         hintStyle: TextStyle(
-                          color: Color(0xFF7F7F7F),
+                          color: theme.hintColor,
                           fontSize: 18.0,
                         ),
                         border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.dividerColor),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.dividerColor),
                         ),
                       ),
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.done,
-                      style: TextStyle(fontSize: 18.0),
+                      style: TextStyle(fontSize: 18.0, color: theme.textTheme.bodyLarge?.color),
                     ),
                   ),
                 ],
@@ -165,7 +172,7 @@ class _LoansPageState extends State<LoansPage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12.0),
                         child: Text(
-                          'Добавить',
+                          localizations.add,
                           style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ),
@@ -180,13 +187,13 @@ class _LoansPageState extends State<LoansPage> {
     );
   }
 
-  // Метод для выбора иконки из списка
   void _selectIcon() {
+    final localizations = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Выберите иконку'),
+          title: Text(localizations!.selectIcon),
           content: Container(
             width: double.maxFinite,
             child: ListView.builder(
@@ -214,6 +221,7 @@ class _LoansPageState extends State<LoansPage> {
   }
 
   void _addToLoans() async {
+    final localizations = AppLocalizations.of(context);
     double amount = double.tryParse(_amountController.text) ?? 0.0;
     String category = _categoryController.text.trim();
 
@@ -225,8 +233,8 @@ class _LoansPageState extends State<LoansPage> {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text('Предупреждение'),
-              content: Text('Категория "$category" уже существует. Вы уверены, что хотите добавить запись?'),
+              title: Text(localizations!.warning),
+              content: Text(localizations.categoryExists),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -235,13 +243,13 @@ class _LoansPageState extends State<LoansPage> {
                     _amountController.clear();
                     _categoryController.clear();
                   },
-                  child: Text('Да'),
+                  child: Text(localizations.yes),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text('Отмена'),
+                  child: Text(localizations.cancel),
                 ),
               ],
             );
@@ -249,7 +257,6 @@ class _LoansPageState extends State<LoansPage> {
         );
       } else {
         await _databaseHelper.insertLoans(amount, category, _selectedIconPath);
-
 
         _amountController.clear();
         _categoryController.clear();
@@ -259,14 +266,14 @@ class _LoansPageState extends State<LoansPage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Ошибка'),
-            content: Text('Введенная сумма неверна. Пожалуйста, введите положительное число.'),
+            title: Text(localizations!.error),
+            content: Text(localizations.invalidAmount),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('ОК'),
+                child: Text(localizations.yes),
               ),
             ],
           );

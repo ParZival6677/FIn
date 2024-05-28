@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'PlanningPage.dart';
+import 'package:provider/provider.dart';
+import 'AppLocalizations.dart';
+import 'Theme_provider.dart';
+import 'Settings.dart';
 import 'main.dart';
-import 'Operations.dart';
+import 'PlanningPage.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -13,9 +16,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFF2F2F2),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -26,7 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Row(
                   children: [
                     Text(
-                      'Вы вошли через номер телефона',
+                      localizations!.profile,
                       style: TextStyle(
                         fontSize: 20.0,
                       ),
@@ -57,31 +64,30 @@ class _ProfilePageState extends State<ProfilePage> {
               Container(
                 padding: EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Column(
                   children: [
                     _buildButton(
                       iconPath: 'assets/icons/notifications-outline.png',
-                      text: 'Настройки уведомлений',
-                      onPressed: () {
-
-                      },
+                      text: localizations.notifications_settings,
+                      onPressed: () {},
                     ),
                     _buildButton(
                       iconPath: 'assets/icons/settings-outline.png',
-                      text: 'Настройки аккаунта',
+                      text: localizations.settings,
                       onPressed: () {
-
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SettingsPage()),
+                        );
                       },
                     ),
                     _buildButton(
                       iconPath: 'assets/icons/help-circle-outline.png',
-                      text: 'Помощь',
-                      onPressed: () {
-
-                      },
+                      text: localizations.help,
+                      onPressed: () {},
                     ),
                   ],
                 ),
@@ -90,19 +96,15 @@ class _ProfilePageState extends State<ProfilePage> {
               Container(
                 padding: EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: _buildButton(
                   iconPath: 'assets/icons/exit-outline.png',
-                  text: 'Выход',
-                  onPressed: () {
-
-                  },
+                  text: localizations.signOut,
+                  onPressed: () {},
                 ),
               ),
-              // Ваши пустые контейнеры здесь
-              Container(),
             ],
           ),
         ),
@@ -115,7 +117,6 @@ class _ProfilePageState extends State<ProfilePage> {
             _selectedIndex = index;
             switch (index) {
               case 0:
-              // Navigate to Home Page
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => HomePage()),
@@ -133,7 +134,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
                 break;
               case 4:
-              // Navigate to Profile Page
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => ProfilePage()),
@@ -144,19 +144,40 @@ class _ProfilePageState extends State<ProfilePage> {
         },
         iconSize: 32.0,
         selectedItemColor: Color(0xFF10B981),
-        unselectedItemColor: Colors.black,
+        unselectedItemColor: isDarkMode ? Colors.white70 : Colors.black,
+        selectedLabelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+        unselectedLabelStyle: TextStyle(color: isDarkMode ? Colors.white70 : Colors.black54),
+        backgroundColor: Theme.of(context).cardColor,
         items: [
           BottomNavigationBarItem(
-            icon: _selectedIndex == 0
-                ? Image.asset('assets/icons/active-home.png', width: 60.0, height: 60.0, scale: 0.8,)
-                : Image.asset('assets/icons/home.png', width: 60.0, height: 60.0, scale: 0.8,),
-            label: 'Главная',
+            icon: Image.asset(
+              isDarkMode
+                  ? (_selectedIndex == 0
+                  ? 'assets/icons/active-home.png'
+                  : 'assets/icons/home-outline-dark-theme.png')
+                  : (_selectedIndex == 0
+                  ? 'assets/icons/active-home.png'
+                  : 'assets/icons/home.png'),
+              width: 60.0,
+              height: 60.0,
+              scale: 0.8,
+            ),
+            label: localizations.main,
           ),
           BottomNavigationBarItem(
-            icon: _selectedIndex == 1
-                ? Image.asset('assets/icons/active-wallet.png', width: 60.0, height: 60.0, scale: 0.8,)
-                : Image.asset('assets/icons/wallet.png', width: 60.0, height: 60.0, scale: 0.8,),
-            label: 'Операции',
+            icon: Image.asset(
+              isDarkMode
+                  ? (_selectedIndex == 1
+                  ? 'assets/icons/active-wallet.png'
+                  : 'assets/icons/wallet-outline-dark-theme.png')
+                  : (_selectedIndex == 1
+                  ? 'assets/icons/active-wallet.png'
+                  : 'assets/icons/wallet.png'),
+              width: 60.0,
+              height: 60.0,
+              scale: 0.8,
+            ),
+            label: localizations.operations,
           ),
           BottomNavigationBarItem(
             icon: Container(
@@ -175,16 +196,34 @@ class _ProfilePageState extends State<ProfilePage> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: _selectedIndex == 3
-                ? Image.asset('assets/icons/active-clipboard.png', width: 60.0, height: 60.0, scale: 0.8,)
-                : Image.asset('assets/icons/clipboard.png', width: 60.0, height: 60.0, scale: 0.8,),
-            label: 'Планы',
+            icon: Image.asset(
+              isDarkMode
+                  ? (_selectedIndex == 3
+                  ? 'assets/icons/active-clipboard.png'
+                  : 'assets/icons/clipboard-outline-dark-theme.png')
+                  : (_selectedIndex == 3
+                  ? 'assets/icons/active-clipboard.png'
+                  : 'assets/icons/clipboard.png'),
+              width: 60.0,
+              height: 60.0,
+              scale: 0.8,
+            ),
+            label: localizations.plans,
           ),
           BottomNavigationBarItem(
-            icon: _selectedIndex == 4
-                ? Image.asset('assets/icons/active-person.png', width: 60.0, height: 60.0, scale: 0.8,)
-                : Image.asset('assets/icons/person.png', width: 60.0, height: 60.0, scale: 0.8,),
-            label: 'Профиль',
+            icon: Image.asset(
+              isDarkMode
+                  ? (_selectedIndex == 4
+                  ? 'assets/icons/active-person.png'
+                  : 'assets/icons/person-outline-dark-theme.png')
+                  : (_selectedIndex == 4
+                  ? 'assets/icons/active-person.png'
+                  : 'assets/icons/person.png'),
+              width: 60.0,
+              height: 60.0,
+              scale: 0.8,
+            ),
+            label: localizations.profilepage,
           ),
         ],
       ),
@@ -212,7 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
               text,
               style: TextStyle(
                 fontSize: 18.0,
-                color: Colors.black,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
           ],

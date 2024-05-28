@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'PlanningPage.dart';
 import 'Notifications.dart';
 import 'ProfilePage.dart';
@@ -10,31 +9,101 @@ import 'CategoryDetailPage.dart';
 import 'LoansDetailPage.dart';
 import 'AccountsPage.dart';
 import 'EditAccountPage.dart';
-import 'RegistrationPage1.dart';
-import 'RegistrationPage2.dart';
-import 'PinCodeScreen.dart';
-
-
+import 'package:provider/provider.dart';
+import 'Theme_provider.dart';
+import 'Settings.dart';
+import 'AppLocalizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper().initDatabase();
   runApp(MyApp());
 }
-class MyApp extends StatelessWidget {
+
+class MyApp extends StatefulWidget {
+  static void setLocale(BuildContext context, Locale newLocale) {
+    _MyAppState state = context.findAncestorStateOfType<_MyAppState>()!;
+    state.setLocale(newLocale);
+  }
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale _locale = Locale('en');
+
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Personal Finance Management',
-      theme: ThemeData(
-        primaryColor: Color(0xFF10B981),
-        scaffoldBackgroundColor: Color(0xFFF2F2F2),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Personal Finance Management',
+            themeMode: themeProvider.themeMode,
+            theme: ThemeData(
+              primaryColor: Color(0xFF10B981),
+              scaffoldBackgroundColor: Color(0xFFF2F2F2),
+              visualDensity: VisualDensity.adaptivePlatformDensity,
+              appBarTheme: AppBarTheme(
+                backgroundColor: Color(0xFFe0e0e0),
+                foregroundColor: Colors.black,
+              ),
+              bottomNavigationBarTheme: BottomNavigationBarThemeData(
+                backgroundColor: Colors.white,
+                selectedItemColor: Colors.black,
+                unselectedItemColor: Colors.black54,
+              ),
+            ),
+            darkTheme: ThemeData(
+              primaryColor: Color(0xFF10B981),
+              scaffoldBackgroundColor: Colors.black,
+              visualDensity: VisualDensity.adaptivePlatformDensity,
+              colorScheme: ColorScheme.dark(),
+              appBarTheme: AppBarTheme(
+                backgroundColor: Color(0xFF424242),
+                foregroundColor: Colors.white,
+              ),
+              bottomNavigationBarTheme: BottomNavigationBarThemeData(
+                backgroundColor: Color(0xFF424242),
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.white70,
+              ),
+            ),
+            locale: _locale,
+            supportedLocales: [
+              Locale('en', ''),
+              Locale('ru', ''),
+              Locale('kk', ''),
+            ],
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            localeResolutionCallback: (locale, supportedLocales) {
+              if (locale == null) return supportedLocales.first;
+              for (var supportedLocale in supportedLocales) {
+                if (supportedLocale.languageCode == locale.languageCode &&
+                    supportedLocale.countryCode == locale.countryCode) {
+                  return supportedLocale;
+                }
+              }
+              return supportedLocales.first;
+            },
+            home: HomePage(),
+          );
+        },
       ),
-      home: HomePage(),
-       // home: RegistrationPage1(),
-      // home: RegistrationPage2(),
-      // home: PinCodeScreen(),
     );
   }
 }
@@ -59,7 +128,6 @@ class _HomePageState extends State<HomePage> {
   late Map<String, String> _loansCategoryIconMap = {};
   Map<String, num> _savingsCategorySumMap = {};
   Map<String, num> _loansCategorySumMap = {};
-
 
   @override
   void initState() {
@@ -91,7 +159,6 @@ class _HomePageState extends State<HomePage> {
       _savingsCategoryIconMap[category] = iconPath;
     }
 
-
     setState(() {
       _totalBalance = total;
       _savingsList = savings;
@@ -113,7 +180,6 @@ class _HomePageState extends State<HomePage> {
       _loansCategoryIconMap[category] = iconPath;
     }
 
-
     setState(() {
       _loansList = loans;
       _loansCategorySumMap = categorySumMap;
@@ -128,7 +194,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
   Future<Map<String, dynamic>> _getCategoryDataSavings(String category) async {
     try {
       String iconPath = await DatabaseHelper().getCategoryIconsSavings(category);
@@ -137,7 +202,6 @@ class _HomePageState extends State<HomePage> {
       throw error;
     }
   }
-
 
   Future<Map<String, dynamic>> _getCategoryDataLoans(String category) async {
     try {
@@ -162,16 +226,18 @@ class _HomePageState extends State<HomePage> {
     return total;
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final localizations = AppLocalizations.of(context)!;
+
     _totalBalance = _calculateTotalBalance();
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(70.0),
         child: AppBar(
-          backgroundColor: Color(0xFFF2F2F2),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -185,7 +251,7 @@ class _HomePageState extends State<HomePage> {
                       Text(
                         _isBalanceVisible ? '${_totalBalance.toString()} \u20B8' : '*******', // Show *** if balance is hidden
                         style: TextStyle(
-                          color: Colors.black,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                           fontSize: 30.0,
                         ),
                       ),
@@ -197,7 +263,9 @@ class _HomePageState extends State<HomePage> {
                           });
                         },
                         icon: Image.asset(
-                          _isBalanceVisible ? 'assets/icons/eye.png' : 'assets/icons/eye-off.png',
+                          _isBalanceVisible
+                              ? (isDarkMode ? 'assets/icons/eye-dark-theme.png' : 'assets/icons/eye.png')
+                              : (isDarkMode ? 'assets/icons/eye-off-dark-theme.png' : 'assets/icons/eye-off.png'),
                           width: 32.0,
                           height: 32.0,
                           scale: 0.9,
@@ -206,13 +274,13 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   Text(
-                    'Общий баланс',
+                    localizations.totalBalance,
                     style: TextStyle(
                       color: Color(0xFF7F7F7F),
                       fontSize: 18.0,
                     ),
                   ),
-                  SizedBox( height: 5),
+                  SizedBox(height: 5),
                 ],
               ),
               IconButton(
@@ -225,7 +293,9 @@ class _HomePageState extends State<HomePage> {
                 icon: Container(
                   margin: EdgeInsets.only(bottom: 25),
                   child: Image.asset(
-                    'assets/icons/notifications.png',
+                    isDarkMode
+                        ? 'assets/icons/notifications-dark-theme.png'
+                        : 'assets/icons/notifications.png',
                     width: 32.0,
                     height: 32.0,
                     scale: 0.9,
@@ -237,14 +307,13 @@ class _HomePageState extends State<HomePage> {
           automaticallyImplyLeading: false,
         ),
       ),
-
       body: ListView(
         children: [
           Container(
             margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
             padding: EdgeInsets.all(20.0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Column(
@@ -258,7 +327,7 @@ class _HomePageState extends State<HomePage> {
                           Row(
                             children: [
                               Text(
-                                'Мои счета',
+                                localizations.myAccounts,
                                 style: TextStyle(
                                   fontSize: 20.0,
                                   fontWeight: FontWeight.bold,
@@ -273,7 +342,7 @@ class _HomePageState extends State<HomePage> {
                                   );
                                 },
                                 child: Text(
-                                  'Посмотреть все',
+                                  localizations.viewAll,
                                   style: TextStyle(
                                     color: Color(0xFF10B981),
                                     fontSize: 17,
@@ -286,24 +355,23 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                           SizedBox(height: 20.0),
-                          Container(
-                            width: double.infinity,
-                            height: 2.0,
-                            color: Color(0xFFF2F2F2),
+                          Divider(
+                            color: Theme.of(context).dividerColor,
+                            thickness: 2.0,
                           ),
                           for (var account in _accountsList)
                             InkWell(
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => EditAccountPage(accountData: account ,)),
+                                  MaterialPageRoute(builder: (context) => EditAccountPage(accountData: account)),
                                 );
                               },
                               child: Container(
                                 width: double.infinity,
                                 padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 child: Row(
@@ -324,7 +392,7 @@ class _HomePageState extends State<HomePage> {
                                         Text(
                                           account['category'] ?? '',
                                           style: TextStyle(
-                                            color: Colors.black,
+                                            color: Theme.of(context).textTheme.bodyLarge?.color,
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -334,9 +402,8 @@ class _HomePageState extends State<HomePage> {
                                     Text(
                                       '${account['amount']} \u20B8',
                                       style: TextStyle(
-                                        color: Colors.black,
+                                        color: Theme.of(context).textTheme.bodyLarge?.color,
                                         fontSize: 18,
-
                                       ),
                                     ),
                                   ],
@@ -355,7 +422,7 @@ class _HomePageState extends State<HomePage> {
             margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
             padding: EdgeInsets.all(20.0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(10.0),
             ),
             child: Column(
@@ -369,7 +436,7 @@ class _HomePageState extends State<HomePage> {
                           Row(
                             children: [
                               Text(
-                                'Аналитика',
+                                localizations.analytics,
                                 style: TextStyle(
                                   fontSize: 20.0,
                                   fontWeight: FontWeight.bold,
@@ -379,7 +446,7 @@ class _HomePageState extends State<HomePage> {
                               TextButton(
                                 onPressed: () {},
                                 child: Text(
-                                  'Подробнее',
+                                  localizations.details,
                                   style: TextStyle(
                                     color: Color(0xFF10B981),
                                     fontSize: 17,
@@ -407,7 +474,7 @@ class _HomePageState extends State<HomePage> {
                                   height: 85.0,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white,
+                                    color: Theme.of(context).cardColor,
                                   ),
                                 ),
                               ),
@@ -422,7 +489,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           _buildExpandableContainer(
-            title: 'Накопления',
+            title: localizations.savings,
             iconPath: '',
             isExpanded: _isSavingsExpanded,
             onPressed: () {
@@ -457,7 +524,7 @@ class _HomePageState extends State<HomePage> {
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                               child: Row(
@@ -478,7 +545,7 @@ class _HomePageState extends State<HomePage> {
                                       Text(
                                         '${category}',
                                         style: TextStyle(
-                                          color: Colors.black,
+                                          color: Theme.of(context).textTheme.bodyLarge?.color,
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -492,7 +559,7 @@ class _HomePageState extends State<HomePage> {
                                     style: TextStyle(
                                       color: _savingsCategorySumMap[category] != null && _savingsCategorySumMap[category]! > 0
                                           ? Color(0xFF10B981)
-                                          : Colors.black,
+                                          : Theme.of(context).textTheme.bodyLarge?.color,
                                       fontSize: 18,
                                     ),
                                   ),
@@ -512,30 +579,27 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                   child: Text(
-                    '+ Добавить накопления',
+                    localizations.addSavings,
                     style: TextStyle(
                       color: Color(0xFF10B981),
                       fontSize: 18,
                     ),
                   ),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.white),
-                    minimumSize: MaterialStateProperty.all(Size(200, 30)),
-                    elevation: MaterialStateProperty.all(0),
-                    shadowColor: MaterialStateProperty.all(Colors.white),
-                    textStyle: MaterialStateProperty.all(TextStyle(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).cardColor,
+                    elevation: 0,
+                    minimumSize: Size(200, 30),
+                    textStyle: TextStyle(
                       color: Color(0xFF10B981),
                       fontSize: 18,
-                    )),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-
-
           _buildExpandableContainer(
-            title: 'Кредиты',
+            title: localizations.loans,
             iconPath: '',
             isExpanded: _isLoansExpanded,
             onPressed: () {
@@ -570,7 +634,7 @@ class _HomePageState extends State<HomePage> {
                               width: double.infinity,
                               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Theme.of(context).cardColor,
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                               child: Row(
@@ -591,7 +655,7 @@ class _HomePageState extends State<HomePage> {
                                       Text(
                                         '${category}',
                                         style: TextStyle(
-                                          color: Colors.black,
+                                          color: Theme.of(context).textTheme.bodyLarge?.color,
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -605,7 +669,7 @@ class _HomePageState extends State<HomePage> {
                                     style: TextStyle(
                                       color: _loansCategorySumMap[category] != null && _loansCategorySumMap[category]! > 0
                                           ? Color(0xFFB3261E)
-                                          : Colors.black,
+                                          : Theme.of(context).textTheme.bodyLarge?.color,
                                       fontSize: 18,
                                     ),
                                   ),
@@ -625,21 +689,20 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                   child: Text(
-                    '+ Добавить кредиты',
+                    localizations.addLoans,
                     style: TextStyle(
                       color: Color(0xFF10B981),
                       fontSize: 18,
                     ),
                   ),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.white),
-                    minimumSize: MaterialStateProperty.all(Size(200, 30)),
-                    elevation: MaterialStateProperty.all(0),
-                    shadowColor: MaterialStateProperty.all(Colors.white),
-                    textStyle: MaterialStateProperty.all(TextStyle(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).cardColor,
+                    elevation: 0,
+                    minimumSize: Size(200, 30),
+                    textStyle: TextStyle(
                       color: Color(0xFF10B981),
                       fontSize: 18,
-                    )),
+                    ),
                   ),
                 ),
               ],
@@ -660,10 +723,10 @@ class _HomePageState extends State<HomePage> {
                 break;
               case 1:
               // Navigate to Operations Page
-              //   Navigator.push(
-              //     context,
-              //     MaterialPageRoute(builder: (context) => OperationsPage()),
-              //   );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => OperationsPage()),
+              // );
                 break;
               case 2:
                 break;
@@ -685,19 +748,40 @@ class _HomePageState extends State<HomePage> {
         },
         iconSize: 32.0,
         selectedItemColor: Color(0xFF10B981),
-        unselectedItemColor: Colors.black,
+        unselectedItemColor: isDarkMode ? Colors.white70 : Colors.black,
+        selectedLabelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+        unselectedLabelStyle: TextStyle(color: isDarkMode ? Colors.white70 : Colors.black54),
+        backgroundColor: Theme.of(context).cardColor,
         items: [
           BottomNavigationBarItem(
-            icon: _selectedIndex == 0
-                ? Image.asset('assets/icons/active-home.png', width: 60.0, height: 60.0, scale: 0.8,)
-                : Image.asset('assets/icons/home.png', width: 60.0, height: 60.0, scale: 0.8,),
-            label: 'Главная',
+            icon: Image.asset(
+              isDarkMode
+                  ? (_selectedIndex == 0
+                  ? 'assets/icons/active-home.png'
+                  : 'assets/icons/home-outline-dark-theme.png')
+                  : (_selectedIndex == 0
+                  ? 'assets/icons/active-home.png'
+                  : 'assets/icons/home.png'),
+              width: 60.0,
+              height: 60.0,
+              scale: 0.8,
+            ),
+            label: localizations.main,
           ),
           BottomNavigationBarItem(
-            icon: _selectedIndex == 1
-                ? Image.asset('assets/icons/active-wallet.png', width: 60.0, height: 60.0, scale: 0.8,)
-                : Image.asset('assets/icons/wallet.png', width: 60.0, height: 60.0, scale: 0.8,),
-            label: 'Операции',
+            icon: Image.asset(
+              isDarkMode
+                  ? (_selectedIndex == 1
+                  ? 'assets/icons/active-wallet.png'
+                  : 'assets/icons/wallet-outline-dark-theme.png')
+                  : (_selectedIndex == 1
+                  ? 'assets/icons/active-wallet.png'
+                  : 'assets/icons/wallet.png'),
+              width: 60.0,
+              height: 60.0,
+              scale: 0.8,
+            ),
+            label: localizations.operations,
           ),
           BottomNavigationBarItem(
             icon: Container(
@@ -716,23 +800,39 @@ class _HomePageState extends State<HomePage> {
             label: '',
           ),
           BottomNavigationBarItem(
-            icon: _selectedIndex == 3
-                ? Image.asset('assets/icons/active-clipboard.png', width: 60.0, height: 60.0, scale: 0.8,)
-                : Image.asset('assets/icons/clipboard.png', width: 60.0, height: 60.0, scale: 0.8,),
-            label: 'Планы',
+            icon: Image.asset(
+              isDarkMode
+                  ? (_selectedIndex == 3
+                  ? 'assets/icons/active-clipboard.png'
+                  : 'assets/icons/clipboard-outline-dark-theme.png')
+                  : (_selectedIndex == 3
+                  ? 'assets/icons/active-clipboard.png'
+                  : 'assets/icons/clipboard.png'),
+              width: 60.0,
+              height: 60.0,
+              scale: 0.8,
+            ),
+            label: localizations.plans,
           ),
           BottomNavigationBarItem(
-            icon: _selectedIndex == 4
-                ? Image.asset('assets/icons/active-person.png', width: 60.0, height: 60.0, scale: 0.8,)
-                : Image.asset('assets/icons/person.png', width: 60.0, height: 60.0, scale: 0.8,),
-            label: 'Профиль',
+            icon: Image.asset(
+              isDarkMode
+                  ? (_selectedIndex == 4
+                  ? 'assets/icons/active-person.png'
+                  : 'assets/icons/person-outline-dark-theme.png')
+                  : (_selectedIndex == 4
+                  ? 'assets/icons/active-person.png'
+                  : 'assets/icons/person.png'),
+              width: 60.0,
+              height: 60.0,
+              scale: 0.8,
+            ),
+            label: localizations.profilepage,
           ),
         ],
       ),
     );
   }
-
-
 
   Widget _buildExpandableContainer({
     required String title,
@@ -741,59 +841,61 @@ class _HomePageState extends State<HomePage> {
     required VoidCallback onPressed,
     required Widget child,
   }) {
-
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       padding: EdgeInsets.all(20.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(10.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-      Row(
-      children: [
-      Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
           Row(
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Spacer(),
-              IconButton(
-                onPressed: onPressed,
-                icon: Image.asset(
-                  isExpanded ? 'assets/icons/caret-up-outline.png' : 'assets/icons/caret-down.png',
-                  width: 24.0,
-                  height: 24.0,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Spacer(),
+                        IconButton(
+                          onPressed: onPressed,
+                          icon: Image.asset(
+                            isExpanded
+                                ? (isDarkMode ? 'assets/icons/caret-up-outline-dark-theme.png' : 'assets/icons/caret-up-outline.png')
+                                : (isDarkMode ? 'assets/icons/caret-down-dark-theme.png' : 'assets/icons/caret-down.png'),
+                            width: 24.0,
+                            height: 24.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.0),
+                    Divider(
+                      color: Theme.of(context).dividerColor,
+                      thickness: 2.0,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20.0),
-          Container(
-            width: double.infinity,
-            height: 2.0,
-            color: Color(0xFFF2F2F2),
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            height: isExpanded ? null : 0,
+            child: isExpanded ? child : null,
           ),
-        ],
-      ),
-    ),
-    ],
-    ),
-    AnimatedContainer(
-    duration: Duration(milliseconds: 300),
-    height: isExpanded ? null : 0,
-    child: isExpanded ? child : null,
-    ),
         ],
       ),
     );

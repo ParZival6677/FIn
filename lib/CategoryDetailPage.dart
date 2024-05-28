@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'database.dart';
 import 'SavingsPage.dart';
+import 'Theme_provider.dart';
+import 'AppLocalizations.dart';
 
 class CategoryDetailPage extends StatelessWidget {
   final String categoryName;
@@ -9,12 +12,18 @@ class CategoryDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           categoryName,
           style: TextStyle(fontSize: 24.0),
         ),
+        backgroundColor: theme.scaffoldBackgroundColor,
         actions: [
           IconButton(
             onPressed: () {
@@ -23,9 +32,9 @@ class CategoryDetailPage extends StatelessWidget {
             icon: Container(
               margin: EdgeInsets.only(right: 18),
               child: Image.asset(
-                'assets/icons/trash-outline.png',
-                width: 26.0,
-                height: 26.0,
+                isDarkMode ? 'assets/icons/trash-outline-dark-theme.png' : 'assets/icons/trash-outline.png',
+                width: 50.0,
+                height: 50.0,
                 scale: 0.9,
               ),
             ),
@@ -61,13 +70,13 @@ class CategoryDetailPage extends StatelessWidget {
                     return Container(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.cardColor,
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       child: Row(
                         children: [
                           Image.asset(
-                            'assets/icons/cash-outline.png',
+                            isDarkMode ? 'assets/icons/cash-outline-dark-theme.png' : 'assets/icons/cash-outline.png',
                             width: 32.0,
                             height: 32.0,
                             scale: 0.9,
@@ -76,7 +85,7 @@ class CategoryDetailPage extends StatelessWidget {
                           Text(
                             '$currentSum \u20B8',
                             style: TextStyle(
-                              color: Color(0xFF7F7F7F),
+                              color: theme.textTheme.bodyLarge?.color ?? Color(0xFF7F7F7F),
                               fontSize: 18.0,
                             ),
                           ),
@@ -106,10 +115,6 @@ class CategoryDetailPage extends StatelessWidget {
                     if (categoryData == null) {
                       return Text('No data available');
                     }
-                    double? currentSum = categoryData['currentSum'];
-                    if (currentSum == null) {
-                      return Text('No sum available');
-                    }
                     String? iconPath = categoryData['iconPath'];
                     if (iconPath == null) {
                       return Text('No icon path available');
@@ -117,7 +122,7 @@ class CategoryDetailPage extends StatelessWidget {
                     return Container(
                       padding: EdgeInsets.symmetric(horizontal: 16.0),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.cardColor,
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                       child: Row(
@@ -132,7 +137,7 @@ class CategoryDetailPage extends StatelessWidget {
                           Text(
                             categoryName,
                             style: TextStyle(
-                              color: Color(0xFF7F7F7F),
+                              color: theme.textTheme.bodyLarge?.color ?? Color(0xFF7F7F7F),
                               fontSize: 18.0,
                             ),
                           ),
@@ -154,7 +159,7 @@ class CategoryDetailPage extends StatelessWidget {
                 );
               },
               child: Text(
-                '+   Пополнить',
+                '${localizations!.addSavings}',
                 style: TextStyle(
                   color: Color(0xFF10B981),
                   fontSize: 17.0,
@@ -169,8 +174,7 @@ class CategoryDetailPage extends StatelessWidget {
 
   Future<Map<String, dynamic>> _getCategoryData() async {
     try {
-      String? iconPath = await DatabaseHelper().getCategoryIconsSavings(
-          categoryName);
+      String? iconPath = await DatabaseHelper().getCategoryIconsSavings(categoryName);
       double currentSum = await _getCategorySum();
       return {'iconPath': iconPath, 'currentSum': currentSum};
     } catch (error) {
@@ -194,25 +198,25 @@ class CategoryDetailPage extends StatelessWidget {
   }
 
   void _confirmDeleteCategory(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Подтвердите удаление"),
-          content: Text(
-              "Вы уверены, что хотите удалить категорию \"$categoryName\"?"),
+          title: Text(localizations!.confirmDelete),
+          content: Text(localizations.confirmDeleteMessage.replaceAll('{category}', categoryName)),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("Отмена"),
+              child: Text(localizations.cancel),
             ),
             TextButton(
               onPressed: () {
                 _deleteCategory(context);
               },
-              child: Text("Удалить"),
+              child: Text(localizations.delete),
             ),
           ],
         );
@@ -221,9 +225,9 @@ class CategoryDetailPage extends StatelessWidget {
   }
 
   void _deleteCategory(BuildContext context) async {
+    final localizations = AppLocalizations.of(context);
     try {
-      List<int> categoryIds = await DatabaseHelper().findCategoryIdsByName(
-          categoryName);
+      List<int> categoryIds = await DatabaseHelper().findCategoryIdsByName(categoryName);
 
       for (int categoryId in categoryIds) {
         int rowsAffected = await DatabaseHelper().deleteSavings(categoryId);
@@ -232,15 +236,14 @@ class CategoryDetailPage extends StatelessWidget {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text("Ошибка"),
-                content: Text(
-                    "Не удалось удалить одну или несколько категорий. Попробуйте снова."),
+                title: Text(localizations!.error),
+                content: Text(localizations.deleteErrorMessage),
                 actions: <Widget>[
                   TextButton(
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: Text("OK"),
+                    child: Text(localizations.ok),
                   ),
                 ],
               );
@@ -258,32 +261,33 @@ class CategoryDetailPage extends StatelessWidget {
   }
 
   void _showSumEditDialog(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     double newSum = 0.0;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Редактирование"),
+          title: Text(localizations!.edit),
           content: TextField(
             keyboardType: TextInputType.numberWithOptions(decimal: true),
             onChanged: (value) {
               newSum = double.tryParse(value) ?? 0.0;
             },
-            decoration: InputDecoration(hintText: "Введите сумму"),
+            decoration: InputDecoration(hintText: localizations.enterAmount),
           ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("Отмена"),
+              child: Text(localizations.cancel),
             ),
             TextButton(
               onPressed: () {
                 _saveNewSum(newSum);
                 Navigator.of(context).pop();
               },
-              child: Text("Сохранить"),
+              child: Text(localizations.ok),
             ),
           ],
         );
@@ -292,31 +296,32 @@ class CategoryDetailPage extends StatelessWidget {
   }
 
   void _showCategoryEditDialog(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
     String newCategoryName = "";
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Редактирование"),
+          title: Text(localizations!.editCategory),
           content: TextField(
             onChanged: (value) {
               newCategoryName = value;
             },
-            decoration: InputDecoration(hintText: "Введите категорию"),
+            decoration: InputDecoration(hintText: localizations.enterCategory),
           ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text("Отмена"),
+              child: Text(localizations.cancel),
             ),
             TextButton(
               onPressed: () {
                 _saveNewCategoryName(newCategoryName);
                 Navigator.of(context).pop();
               },
-              child: Text("Сохранить"),
+              child: Text(localizations.ok),
             ),
           ],
         );
@@ -331,8 +336,6 @@ class CategoryDetailPage extends StatelessWidget {
       print('Ошибка при сохранении новой суммы: $error');
     }
   }
-
-
 
   void _saveNewCategoryName(String newCategoryName) async {
     try {

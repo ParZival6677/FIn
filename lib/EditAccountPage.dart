@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'database.dart';
+import 'Theme_provider.dart';
+import 'AppLocalizations.dart';
 
 class EditAccountPage extends StatefulWidget {
   final Map<String, dynamic> accountData;
@@ -32,7 +35,6 @@ class _EditAccountPageState extends State<EditAccountPage> {
     super.dispose();
   }
 
-
   Future<void> _saveChanges(BuildContext context) async {
     double amount = double.parse(_amountController.text);
     String category = _categoryController.text;
@@ -56,7 +58,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
         print('Amount updated successfully');
 
         final snackBar = SnackBar(
-          content: Text('Changes saved successfully'),
+          content: Text(AppLocalizations.of(context)!.changesSaved),
         );
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       } else {
@@ -64,7 +66,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
       }
     } else {
       final snackBar = SnackBar(
-        content: Text('No changes to save'),
+        content: Text(AppLocalizations.of(context)!.noChanges),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
@@ -72,36 +74,35 @@ class _EditAccountPageState extends State<EditAccountPage> {
     Navigator.of(context).pop();
   }
 
-
   Future<void> _deleteAccount(BuildContext context) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Подтвердите удаление'),
+          title: Text(AppLocalizations.of(context)!.confirmDeletion),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Вы уверены, что хотите удалить этот счет?'),
+                Text(AppLocalizations.of(context)!.deleteQuestion),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Отмена'),
+              child: Text(AppLocalizations.of(context)!.cancel),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Удалить'),
+              child: Text(AppLocalizations.of(context)!.delete),
               onPressed: () async {
                 Navigator.of(context).pop();
                 int id = widget.accountData['id'];
                 int result = await DatabaseHelper().deleteAccounts(id);
                 final snackBar = SnackBar(
-                  content: Text(result > 0 ? 'Счет успешно удален' : 'Не удалось удалить счет'),
+                  content: Text(result > 0 ? AppLocalizations.of(context)!.deleteAccount : 'Не удалось удалить счет'),
                 );
                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
                 Navigator.of(context).pop();
@@ -113,12 +114,17 @@ class _EditAccountPageState extends State<EditAccountPage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Редактировать счет'),
+        title: Text(localizations!.editAccount),
+        backgroundColor: theme.scaffoldBackgroundColor,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
@@ -127,7 +133,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
                 _saveChanges(context);
               },
               icon: Image.asset(
-                'assets/icons/save-button.png',
+                isDarkMode ? 'assets/icons/save-button-dark-theme.png' : 'assets/icons/save-button.png',
               ),
               iconSize: 40,
             ),
@@ -142,13 +148,13 @@ class _EditAccountPageState extends State<EditAccountPage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Row(
                 children: [
                   Image.asset(
-                    'assets/icons/cash-outline.png',
+                    isDarkMode ? 'assets/icons/cash-outline-dark-theme.png' : 'assets/icons/cash-outline.png',
                     width: 32.0,
                     height: 32.0,
                     scale: 0.8,
@@ -158,20 +164,20 @@ class _EditAccountPageState extends State<EditAccountPage> {
                     child: TextField(
                       controller: _amountController,
                       decoration: InputDecoration(
-                        hintText: 'Введите сумму',
+                        hintText: localizations.enterAmount,
                         hintStyle: TextStyle(
-                          color: Color(0xFF7F7F7F),
+                          color: theme.hintColor,
                           fontSize: 18.0,
                         ),
                         border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.dividerColor),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.dividerColor),
                         ),
                       ),
                       keyboardType: TextInputType.number,
-                      style: TextStyle(fontSize: 18.0),
+                      style: TextStyle(fontSize: 18.0, color: theme.textTheme.bodyLarge?.color),
                     ),
                   ),
                 ],
@@ -183,13 +189,13 @@ class _EditAccountPageState extends State<EditAccountPage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Row(
                 children: [
                   Image.asset(
-                    _iconPath.isNotEmpty ? _iconPath : 'assets/icons/cash-outline.png',
+                    _iconPath.isNotEmpty ? _iconPath : (isDarkMode ? 'assets/icons/cash-outline-dark-theme.png' : 'assets/icons/cash-outline.png'),
                     width: 32.0,
                     height: 32.0,
                     scale: 0.8,
@@ -199,21 +205,21 @@ class _EditAccountPageState extends State<EditAccountPage> {
                     child: TextFormField(
                       controller: _categoryController,
                       decoration: InputDecoration(
-                        hintText: 'Введите категорию',
+                        hintText: localizations.enterCategory,
                         hintStyle: TextStyle(
-                          color: Color(0xFF7F7F7F),
+                          color: theme.hintColor,
                           fontSize: 18.0,
                         ),
                         border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.dividerColor),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.dividerColor),
                         ),
                       ),
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.done,
-                      style: TextStyle(fontSize: 18.0),
+                      style: TextStyle(fontSize: 18.0, color: theme.textTheme.bodyLarge?.color),
                     ),
                   ),
                 ],
@@ -228,25 +234,26 @@ class _EditAccountPageState extends State<EditAccountPage> {
                 child: Container(
                   padding: EdgeInsets.fromLTRB(20, 20, 120, 20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Включить уведомления',
+                        localizations.enableNotifications,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                       SizedBox(height: 10.0),
                       Text(
-                        'Получить уведомление, когда будут изменения в операциях этого кошелька',
+                        localizations.notificationsDescription,
                         style: TextStyle(
                           fontSize: 14.0,
-                          color: Color(0xFF7F7F7F),
+                          color: theme.hintColor,
                         ),
                         textAlign: TextAlign.left,
                       ),
@@ -283,33 +290,26 @@ class _EditAccountPageState extends State<EditAccountPage> {
                 child: Container(
                   padding: EdgeInsets.fromLTRB(20, 20, 130, 20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Исключить с Итого',
+                        localizations.excludeFromTotal,
                         style: TextStyle(
                           fontSize: 18.0,
                           fontWeight: FontWeight.bold,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                       SizedBox(height: 10.0),
                       Text(
-                        'Игнорировать этот кошелек и его ',
+                        localizations.excludeDescription,
                         style: TextStyle(
                           fontSize: 14.0,
-                          color: Color(0xFF7F7F7F),
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                      Text(
-                        'баланс в режиме «Итого»',
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          color: Color(0xFF7F7F7F),
+                          color: theme.hintColor,
                         ),
                         textAlign: TextAlign.left,
                       ),
@@ -355,7 +355,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Удалить счет',
+                    localizations.deleteAccount,
                     style: TextStyle(
                       fontSize: 16.0,
                       color: Colors.red,

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'EditAccountPage.dart';
 import 'AddAccountPage.dart';
 import 'database.dart';
+import 'Theme_provider.dart';
+import 'AppLocalizations.dart';
 
 class EditAccountsPage extends StatefulWidget {
   @override
@@ -26,9 +29,15 @@ class _EditAccountsPageState extends State<EditAccountsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Мои счета'),
+        title: Text(localizations!.myAccounts),
+        backgroundColor: theme.scaffoldBackgroundColor,
       ),
       body: SafeArea(
         child: Column(
@@ -55,18 +64,16 @@ class _EditAccountsPageState extends State<EditAccountsPage> {
                           MaterialPageRoute(builder: (context) => AddAccountPage()),
                         );
                       },
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xFF10B981)),
-                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF10B981),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12.0),
                         child: Text(
-                          'Добавить',
+                          localizations.addAccount,
                           style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ),
@@ -82,11 +89,13 @@ class _EditAccountsPageState extends State<EditAccountsPage> {
   }
 
   Widget _buildAccountContainer(Map<String, dynamic> account) {
+    final theme = Theme.of(context);
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.0),
+      margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(10.0),
       ),
       child: Row(
@@ -106,13 +115,14 @@ class _EditAccountsPageState extends State<EditAccountsPage> {
                 style: TextStyle(
                   fontSize: 17.0,
                   fontWeight: FontWeight.bold,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
               Text(
                 '${account['amount']} \u20B8',
                 style: TextStyle(
                   fontSize: 18.0,
-                  color: Colors.grey,
+                  color: theme.textTheme.bodySmall?.color,
                 ),
               ),
             ],
@@ -125,7 +135,7 @@ class _EditAccountsPageState extends State<EditAccountsPage> {
                 MaterialPageRoute(builder: (context) => EditAccountPage(accountData: account)),
               );
             },
-            icon: Icon(Icons.more_vert),
+            icon: Icon(Icons.more_vert, color: theme.iconTheme.color),
             iconSize: 30.0,
           )
         ],

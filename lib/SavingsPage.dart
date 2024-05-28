@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'database.dart';
-
+import 'Theme_provider.dart';
+import 'AppLocalizations.dart';
 
 class SavingsPage extends StatefulWidget {
   @override
@@ -11,7 +13,6 @@ class _SavingsPageState extends State<SavingsPage> {
   late TextEditingController _amountController;
   late TextEditingController _categoryController;
   late DatabaseHelper _databaseHelper;
-
 
   final List<String> categoryIconPaths = [
     'assets/icons/fin-pod.png',
@@ -38,12 +39,18 @@ class _SavingsPageState extends State<SavingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Добавить накопления',
+          localizations!.addSaving,
           style: TextStyle(fontSize: 24.0),
         ),
+        backgroundColor: theme.scaffoldBackgroundColor,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,13 +61,13 @@ class _SavingsPageState extends State<SavingsPage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Row(
                 children: [
                   Image.asset(
-                    'assets/icons/cash-outline.png',
+                    isDarkMode ? 'assets/icons/cash-outline-dark-theme.png' : 'assets/icons/cash-outline.png',
                     width: 32.0,
                     height: 32.0,
                     scale: 0.8,
@@ -70,20 +77,20 @@ class _SavingsPageState extends State<SavingsPage> {
                     child: TextField(
                       controller: _amountController,
                       decoration: InputDecoration(
-                        hintText: 'Введите сумму',
+                        hintText: localizations.enterAmount,
                         hintStyle: TextStyle(
-                          color: Color(0xFF7F7F7F),
+                          color: theme.textTheme.bodyLarge?.color,
                           fontSize: 18.0,
                         ),
                         border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.textTheme.bodyLarge?.color ?? Colors.black),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.textTheme.bodyLarge?.color ?? Colors.black),
                         ),
                       ),
                       keyboardType: TextInputType.number,
-                      style: TextStyle(fontSize: 18.0),
+                      style: TextStyle(fontSize: 18.0, color: theme.textTheme.bodyLarge?.color),
                     ),
                   ),
                 ],
@@ -95,7 +102,7 @@ class _SavingsPageState extends State<SavingsPage> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(10.0),
               ),
               child: Row(
@@ -114,21 +121,21 @@ class _SavingsPageState extends State<SavingsPage> {
                     child: TextFormField(
                       controller: _categoryController,
                       decoration: InputDecoration(
-                        hintText: 'Введите категорию',
+                        hintText: localizations.enterCategory,
                         hintStyle: TextStyle(
-                          color: Color(0xFF7F7F7F),
+                          color: theme.textTheme.bodyLarge?.color,
                           fontSize: 18.0,
                         ),
                         border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.textTheme.bodyLarge?.color ?? Colors.black),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.black),
+                          borderSide: BorderSide(color: theme.textTheme.bodyLarge?.color ?? Colors.black),
                         ),
                       ),
                       keyboardType: TextInputType.text,
                       textInputAction: TextInputAction.done,
-                      style: TextStyle(fontSize: 18.0),
+                      style: TextStyle(fontSize: 18.0, color: theme.textTheme.bodyLarge?.color),
                     ),
                   ),
                 ],
@@ -160,7 +167,7 @@ class _SavingsPageState extends State<SavingsPage> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12.0),
                         child: Text(
-                          'Добавить',
+                          localizations.add,
                           style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ),
@@ -176,11 +183,12 @@ class _SavingsPageState extends State<SavingsPage> {
   }
 
   void _selectIcon() {
+    final localizations = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Выберите иконку'),
+          title: Text(localizations!.chooseIcon),
           content: Container(
             width: double.maxFinite,
             child: ListView.builder(
@@ -208,6 +216,7 @@ class _SavingsPageState extends State<SavingsPage> {
   }
 
   void _addToSavings() async {
+    final localizations = AppLocalizations.of(context);
     double amount = double.tryParse(_amountController.text) ?? 0.0;
     String category = _categoryController.text.trim();
 
@@ -219,8 +228,8 @@ class _SavingsPageState extends State<SavingsPage> {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text('Предупреждение'),
-              content: Text('Категория "$category" уже существует. Вы уверены, что хотите добавить запись?'),
+              title: Text(localizations!.warning),
+              content: Text(localizations.categoryExists.replaceAll('{category}', category)),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -229,13 +238,13 @@ class _SavingsPageState extends State<SavingsPage> {
                     _amountController.clear();
                     _categoryController.clear();
                   },
-                  child: Text('Да'),
+                  child: Text(localizations.yes),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text('Отмена'),
+                  child: Text(localizations.cancel),
                 ),
               ],
             );
@@ -243,7 +252,6 @@ class _SavingsPageState extends State<SavingsPage> {
         );
       } else {
         await _databaseHelper.insertSavings(amount, category, _selectedIconPath);
-
 
         _amountController.clear();
         _categoryController.clear();
@@ -253,14 +261,14 @@ class _SavingsPageState extends State<SavingsPage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Ошибка'),
-            content: Text('Введенная сумма неверна. Пожалуйста, введите положительное число.'),
+            title: Text(localizations!.error),
+            content: Text(localizations.invalidAmount),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('ОК'),
+                child: Text(localizations.ok),
               ),
             ],
           );
@@ -271,6 +279,4 @@ class _SavingsPageState extends State<SavingsPage> {
       _categoryController.clear();
     }
   }
-
-
 }
