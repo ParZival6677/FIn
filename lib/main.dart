@@ -11,7 +11,6 @@ import 'AccountsPage.dart';
 import 'EditAccountPage.dart';
 import 'package:provider/provider.dart';
 import 'Theme_provider.dart';
-import 'Settings.dart';
 import 'AppLocalizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -46,38 +45,24 @@ class _MyAppState extends State<MyApp> {
       create: (context) => ThemeProvider(),
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
+          ThemeData themeData;
+          switch (themeProvider.customTheme) {
+            case 'dark':
+              themeData = MyThemes.darkTheme;
+              break;
+            case 'nature':
+              themeData = MyThemes.natureTheme;
+              break;
+            case 'light':
+            default:
+              themeData = MyThemes.lightTheme;
+              break;
+          }
           return MaterialApp(
             title: 'Personal Finance Management',
             themeMode: themeProvider.themeMode,
-            theme: ThemeData(
-              primaryColor: Color(0xFF10B981),
-              scaffoldBackgroundColor: Color(0xFFF2F2F2),
-              visualDensity: VisualDensity.adaptivePlatformDensity,
-              appBarTheme: AppBarTheme(
-                backgroundColor: Color(0xFFe0e0e0),
-                foregroundColor: Colors.black,
-              ),
-              bottomNavigationBarTheme: BottomNavigationBarThemeData(
-                backgroundColor: Colors.white,
-                selectedItemColor: Colors.black,
-                unselectedItemColor: Colors.black54,
-              ),
-            ),
-            darkTheme: ThemeData(
-              primaryColor: Color(0xFF10B981),
-              scaffoldBackgroundColor: Colors.black,
-              visualDensity: VisualDensity.adaptivePlatformDensity,
-              colorScheme: ColorScheme.dark(),
-              appBarTheme: AppBarTheme(
-                backgroundColor: Color(0xFF424242),
-                foregroundColor: Colors.white,
-              ),
-              bottomNavigationBarTheme: BottomNavigationBarThemeData(
-                backgroundColor: Color(0xFF424242),
-                selectedItemColor: Colors.white,
-                unselectedItemColor: Colors.white70,
-              ),
-            ),
+            theme: themeData,
+            darkTheme: MyThemes.darkTheme,
             locale: _locale,
             supportedLocales: [
               Locale('en', ''),
@@ -124,27 +109,29 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> _savingsList = [];
   List<Map<String, dynamic>> _loansList = [];
   List<Map<String, dynamic>> _accountsList = [];
-  late Map<String, String> _savingsCategoryIconMap = {};
-  late Map<String, String> _loansCategoryIconMap = {};
+  Map<String, String> _savingsCategoryIconMap = {};
+  Map<String, String> _loansCategoryIconMap = {};
   Map<String, num> _savingsCategorySumMap = {};
   Map<String, num> _loansCategorySumMap = {};
 
   @override
   void initState() {
     super.initState();
-    _updateSavingsList();
-    _updateLoansList();
+    _updateData();
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _updateSavingsList();
-    _updateLoansList();
-    _updateAccountsList();
+  void _updateData() async {
+    await Future.wait([
+      _updateSavingsList(),
+      _updateLoansList(),
+      _updateAccountsList(),
+    ]);
+    setState(() {
+      _totalBalance = _calculateTotalBalance();
+    });
   }
 
-  void _updateSavingsList() async {
+  Future<void> _updateSavingsList() async {
     List<Map<String, dynamic>> savings = await DatabaseHelper().getSavings();
 
     Map<String, num> categorySumMap = {};
@@ -160,14 +147,12 @@ class _HomePageState extends State<HomePage> {
     }
 
     setState(() {
-      _totalBalance = total;
       _savingsList = savings;
       _savingsCategorySumMap = categorySumMap;
-      _savingsCategoryIconMap = {};
     });
   }
 
-  void _updateLoansList() async {
+  Future<void> _updateLoansList() async {
     List<Map<String, dynamic>> loans = await DatabaseHelper().getLoans();
 
     Map<String, num> categorySumMap = {};
@@ -183,11 +168,10 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _loansList = loans;
       _loansCategorySumMap = categorySumMap;
-      _loansCategoryIconMap = {};
     });
   }
 
-  void _updateAccountsList() async {
+  Future<void> _updateAccountsList() async {
     List<Map<String, dynamic>> accounts = await DatabaseHelper().getAccounts();
     setState(() {
       _accountsList = accounts;
@@ -229,10 +213,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.isDarkMode;
+    final isDarkMode = themeProvider.customTheme == 'dark';
     final localizations = AppLocalizations.of(context)!;
 
-    _totalBalance = _calculateTotalBalance();
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(70.0),
@@ -310,7 +293,7 @@ class _HomePageState extends State<HomePage> {
       body: ListView(
         children: [
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+            margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
             padding: EdgeInsets.all(20.0),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
@@ -842,7 +825,7 @@ class _HomePageState extends State<HomePage> {
     required Widget child,
   }) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.isDarkMode;
+    final isDarkMode = themeProvider.customTheme == 'dark';
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
       padding: EdgeInsets.all(20.0),
@@ -873,8 +856,12 @@ class _HomePageState extends State<HomePage> {
                           onPressed: onPressed,
                           icon: Image.asset(
                             isExpanded
-                                ? (isDarkMode ? 'assets/icons/caret-up-outline-dark-theme.png' : 'assets/icons/caret-up-outline.png')
-                                : (isDarkMode ? 'assets/icons/caret-down-dark-theme.png' : 'assets/icons/caret-down.png'),
+                                ? (isDarkMode
+                                ? 'assets/icons/caret-up-outline-dark-theme.png'
+                                : 'assets/icons/caret-up-outline.png')
+                                : (isDarkMode
+                                ? 'assets/icons/caret-down-dark-theme.png'
+                                : 'assets/icons/caret-down.png'),
                             width: 24.0,
                             height: 24.0,
                           ),

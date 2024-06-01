@@ -118,7 +118,7 @@ class _EditAccountPageState extends State<EditAccountPage> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final theme = Theme.of(context);
-    final isDarkMode = themeProvider.isDarkMode;
+    final isDarkMode = themeProvider.customTheme == 'dark';
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(

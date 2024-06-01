@@ -17,7 +17,7 @@ class _PlanningPageState extends State<PlanningPage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.isDarkMode;
+    final isDarkMode = themeProvider.customTheme == 'dark';
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
@@ -80,7 +80,7 @@ class _PlanningPageState extends State<PlanningPage> {
                         ),
                         Row(
                           children: [
-                            ElevatedButton(
+                            TextButton(
                               onPressed: () {},
                               child: Text(
                                 localizations.addPlanningCategory,
@@ -89,12 +89,9 @@ class _PlanningPageState extends State<PlanningPage> {
                                   fontSize: 20,
                                 ),
                               ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).elevatedButtonTheme.style?.backgroundColor?.resolve({}),
-                                foregroundColor: Theme.of(context).elevatedButtonTheme.style?.foregroundColor?.resolve({}),
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
                                 minimumSize: Size(200, 30),
-                                elevation: 0,
-                                shadowColor: Theme.of(context).scaffoldBackgroundColor,
                                 textStyle: TextStyle(
                                   fontSize: 20,
                                 ),
@@ -136,7 +133,10 @@ class _PlanningPageState extends State<PlanningPage> {
                 );
                 break;
               case 1:
-
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OperationsPage()),
+                );
                 break;
               case 2:
                 break;

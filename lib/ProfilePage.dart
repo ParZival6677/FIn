@@ -5,6 +5,7 @@ import 'Theme_provider.dart';
 import 'Settings.dart';
 import 'main.dart';
 import 'PlanningPage.dart';
+import 'MapsPage.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -17,7 +18,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.isDarkMode;
+    final isDarkMode = themeProvider.customTheme == 'dark';
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
@@ -50,6 +51,19 @@ class _ProfilePageState extends State<ProfilePage> {
                 SizedBox(height: 10),
               ],
             ),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.location_on, size: 32),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MapsPage()),
+                    );
+                  },
+                ),
+              ],
+            ),
           ],
         ),
         automaticallyImplyLeading: false,
@@ -70,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   children: [
                     _buildButton(
-                      iconPath: 'assets/icons/notifications-outline.png',
+                      iconPath:'assets/icons/notifications-outline.png',
                       text: localizations.notifications_settings,
                       onPressed: () {},
                     ),

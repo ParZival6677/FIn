@@ -9,12 +9,13 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final theme = Theme.of(context);
+    final isDarkMode = themeProvider.isDarkMode;
     final localizations = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(localizations!.settings),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
       ),
       body: Padding(
@@ -46,19 +47,32 @@ class SettingsPage extends StatelessWidget {
                       localizations.changeTheme,
                       style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                     ),
-                    trailing: IconButton(
-                      icon: Image.asset(
-                        themeProvider.isDarkMode
-                            ? 'assets/icons/switch-enabled.png'
-                            : 'assets/icons/switch-disabled.png',
-                        width: 46.0,
-                        height: 50.0,
-                        scale: 0.9,
+                    trailing: DropdownButton<String>(
+                      value: themeProvider.customTheme,
+                      icon: SizedBox.shrink(),
+                      iconSize: 0,
+                      elevation: 16,
+                      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                      underline: Container(
+                        height: 2,
+                        color: theme.primaryColor,
                       ),
-                      onPressed: () {
-                        final provider = Provider.of<ThemeProvider>(context, listen: false);
-                        provider.toggleTheme(!themeProvider.isDarkMode);
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          final provider = Provider.of<ThemeProvider>(context, listen: false);
+                          provider.setCustomTheme(newValue);
+                        }
                       },
+                      items: <String>['light', 'dark', 'nature']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ],
@@ -90,8 +104,8 @@ class SettingsPage extends StatelessWidget {
                     ),
                     trailing: DropdownButton<Locale>(
                       value: Localizations.localeOf(context),
-                      icon: SizedBox.shrink(), // Removing the arrow
-                      iconSize: 24,
+                      icon: SizedBox.shrink(),
+                      iconSize: 0,
                       elevation: 16,
                       style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                       underline: Container(

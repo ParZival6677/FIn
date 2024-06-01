@@ -2,41 +2,62 @@ import 'package:flutter/material.dart';
 
 class ThemeProvider extends ChangeNotifier {
   ThemeMode themeMode = ThemeMode.light;
+  String customTheme = 'light';
 
   bool get isDarkMode => themeMode == ThemeMode.dark;
+  bool get isNatureMode => customTheme == 'nature';
 
   void toggleTheme(bool isOn) {
     themeMode = isOn ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
+  }
+
+  void setCustomTheme(String theme) {
+    customTheme = theme;
     notifyListeners();
   }
 }
 
 class MyThemes {
   static final darkTheme = ThemeData(
-    scaffoldBackgroundColor: Color(0xFF1E1E1E),
+    scaffoldBackgroundColor: Colors.black,
     colorScheme: ColorScheme.dark(),
-    primaryColor: Color(0xFF2C3E50),
+    primaryColor: Color(0xFF282727),
     iconTheme: IconThemeData(color: Colors.white),
-    cardColor: Color(0xFF374151),
+    cardColor: Colors.grey[900],
     dividerColor: Colors.grey[600],
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: Color(0xFF374151),
+      backgroundColor: Colors.black,
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.white70,
     ),
   );
 
   static final lightTheme = ThemeData(
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: Colors.grey[200],
     colorScheme: ColorScheme.light(),
-    primaryColor: Colors.white,
+    primaryColor: Colors.grey[200],
     iconTheme: IconThemeData(color: Colors.black),
     cardColor: Colors.white,
     dividerColor: Colors.grey[300],
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[600],
       selectedItemColor: Colors.black,
       unselectedItemColor: Colors.black54,
+    ),
+  );
+
+  static final natureTheme = ThemeData(
+    scaffoldBackgroundColor: Colors.black,
+    colorScheme: ColorScheme.dark(),
+    primaryColor: Color(0xFF282727),
+    iconTheme: IconThemeData(color: Colors.white),
+    cardColor: Color(0xFF9A10A8),
+    dividerColor: Colors.grey[300],
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: Colors.black,
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.white70,
     ),
   );
 }
