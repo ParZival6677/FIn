@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
-import 'ProfilePage.dart';
-import 'Operations.dart';
 import 'package:provider/provider.dart';
+import 'AddOperationsPage.dart';
+import 'OperationsPage.dart';
+import 'database.dart';
 import 'Theme_provider.dart';
 import 'AppLocalizations.dart';
+import 'main.dart';
+import 'ProfilePage.dart';
+import 'AddPlansPage.dart';
 
 class PlanningPage extends StatefulWidget {
   @override
@@ -13,6 +16,20 @@ class PlanningPage extends StatefulWidget {
 
 class _PlanningPageState extends State<PlanningPage> {
   int _selectedIndex = 3;
+  List<Map<String, dynamic>> _plans = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlans();
+  }
+
+  Future<void> _loadPlans() async {
+    List<Map<String, dynamic>> plans = await DatabaseHelper().getPlans();
+    setState(() {
+      _plans = plans;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,29 +41,24 @@ class _PlanningPageState extends State<PlanningPage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  localizations!.planningTitle,
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  localizations.planningTitle2,
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    fontSize: 17.0,
-                  ),
-                ),
-              ],
+            Text(
+              localizations?.planningTitle ?? 'Планирование бюджета на месяц',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+                fontSize: 20.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              localizations?.planningTitle2 ?? 'Добавьте категорию для отслеживания',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+                fontSize: 17.0,
+              ),
             ),
           ],
         ),
@@ -62,55 +74,105 @@ class _PlanningPageState extends State<PlanningPage> {
             borderRadius: BorderRadius.circular(10.0),
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  SizedBox(height: 20.0),
-                  Expanded(
+              for (var plan in _plans)
+                InkWell(
+                  onTap: () {
+                    // Implement navigation to edit plan page
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
-                          children: [],
-                        ),
-                        SizedBox(height: 20.0),
-                        Divider(
-                          color: Theme.of(context).dividerColor,
-                          height: 2.0,
-                        ),
-                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
-                              onPressed: () {},
-                              child: Text(
-                                localizations.addPlanningCategory,
-                                style: TextStyle(
-                                  color: Color(0xFF10B981),
-                                  fontSize: 20,
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 36.0,
+                                  child: Image.asset(
+                                    plan['iconPath'] ?? 'assets/icons/default-icon.png',
+                                    width: 40.0,
+                                    height: 40.0,
+                                    scale: 0.7,
+                                  ),
                                 ),
-                              ),
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size(200, 30),
-                                textStyle: TextStyle(
-                                  fontSize: 20,
+                                SizedBox(width: 15.0),
+                                Text(
+                                  plan['category'] ?? '',
+                                  style: TextStyle(
+                                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${plan['amount']} \u20B8',
+                                  style: TextStyle(
+                                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  '${plan['plannedAmount']} \u20B8',
+                                  style: TextStyle(
+                                    color: (plan['plannedAmount'] < 0)
+                                        ? Color(0xFFB3261E)
+                                        : Color(0xFF10B981),
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
+              Container(
+                width: double.infinity,
+                height: 2.0,
+                color: Theme.of(context).dividerColor,
               ),
-              SizedBox(height: 20.0),
               Row(
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [],
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AddPlansPage()),
+                      );
+                    },
+                    child: Text(
+                      localizations?.addCategory ?? '+ Добавить категорию',
+                      style: TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 20,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).cardColor,
+                      elevation: 0,
+                      minimumSize: Size(200, 30),
+                      textStyle: TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 18,
+                      ),
                     ),
                   ),
                 ],
@@ -139,6 +201,7 @@ class _PlanningPageState extends State<PlanningPage> {
                 );
                 break;
               case 2:
+              // Navigate to the Adding Page
                 break;
               case 3:
                 Navigator.push(
@@ -175,7 +238,7 @@ class _PlanningPageState extends State<PlanningPage> {
               height: 60.0,
               scale: 0.8,
             ),
-            label: localizations.main,
+            label: localizations?.main ?? 'Главная',
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
@@ -190,7 +253,7 @@ class _PlanningPageState extends State<PlanningPage> {
               height: 60.0,
               scale: 0.8,
             ),
-            label: localizations.operations,
+            label: localizations?.operations ?? 'Операции',
           ),
           BottomNavigationBarItem(
             icon: Container(
@@ -199,7 +262,12 @@ class _PlanningPageState extends State<PlanningPage> {
               child: Transform.translate(
                 offset: Offset(0.0, 8.0),
                 child: FloatingActionButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddOperationsPage()),
+                    );
+                  },
                   backgroundColor: Color(0xFF10B981),
                   child: Icon(Icons.add, color: Colors.white, size: 32.0),
                   shape: CircleBorder(),
@@ -221,7 +289,7 @@ class _PlanningPageState extends State<PlanningPage> {
               height: 60.0,
               scale: 0.8,
             ),
-            label: localizations.plans,
+            label: localizations?.plans ?? 'Планы',
           ),
           BottomNavigationBarItem(
             icon: Image.asset(
@@ -236,7 +304,7 @@ class _PlanningPageState extends State<PlanningPage> {
               height: 60.0,
               scale: 0.8,
             ),
-            label: localizations.profilepage,
+            label: localizations?.profilepage ?? 'Профиль',
           ),
         ],
       ),

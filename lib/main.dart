@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'OperationsPage.dart';
 import 'PlanningPage.dart';
 import 'Notifications.dart';
 import 'ProfilePage.dart';
@@ -12,6 +13,7 @@ import 'EditAccountPage.dart';
 import 'package:provider/provider.dart';
 import 'Theme_provider.dart';
 import 'AppLocalizations.dart';
+import 'AddOperationsPage.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
@@ -113,6 +115,7 @@ class _HomePageState extends State<HomePage> {
   Map<String, String> _loansCategoryIconMap = {};
   Map<String, num> _savingsCategorySumMap = {};
   Map<String, num> _loansCategorySumMap = {};
+  Map<String, num> _expensesCategorySumMap = {};
 
   @override
   void initState() {
@@ -125,6 +128,7 @@ class _HomePageState extends State<HomePage> {
       _updateSavingsList(),
       _updateLoansList(),
       _updateAccountsList(),
+      _updateExpensesList(),
     ]);
     setState(() {
       _totalBalance = _calculateTotalBalance();
@@ -196,6 +200,22 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _updateExpensesList() async {
+    List<Map<String, dynamic>> expenses = await DatabaseHelper().getAllExpenses();
+
+    Map<String, num> categorySumMap = {};
+
+    for (var expense in expenses) {
+      String category = expense['category'];
+      num amount = expense['amount'];
+      categorySumMap[category] = (categorySumMap[category] ?? 0) + amount;
+    }
+
+    setState(() {
+      _expensesCategorySumMap = categorySumMap;
+    });
+  }
+
   num _calculateTotalBalance() {
     num total = 0;
 
@@ -208,6 +228,10 @@ class _HomePageState extends State<HomePage> {
     }
 
     return total;
+  }
+
+  Map<String, double> _convertToDoubleMap(Map<String, num> input) {
+    return input.map((key, value) => MapEntry(key, value.toDouble()));
   }
 
   @override
@@ -444,23 +468,10 @@ class _HomePageState extends State<HomePage> {
                           SizedBox(height: 20.0),
                           Align(
                             alignment: Alignment.center,
-                            child: Container(
-                              width: 150.0,
-                              height: 150.0,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.grey,
-                              ),
-                              child: Center(
-                                child: Container(
-                                  width: 85.0,
-                                  height: 85.0,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Theme.of(context).cardColor,
-                                  ),
-                                ),
-                              ),
+                            child: PieChart(
+                              data: _convertToDoubleMap(_expensesCategorySumMap),
+                              colors: [Colors.orange, Colors.yellow, Colors.green, Colors.blue, Colors.pink, Colors.brown],
+                              innerCircleColor: Theme.of(context).cardColor, // Pass the inner circle color
                             ),
                           ),
                         ],
@@ -471,6 +482,7 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
+
           _buildExpandableContainer(
             title: localizations.savings,
             iconPath: '',
@@ -705,13 +717,16 @@ class _HomePageState extends State<HomePage> {
               // Navigate to Home Page
                 break;
               case 1:
-              // Navigate to Operations Page
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => OperationsPage()),
-              // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OperationsPage()),
+                );
                 break;
               case 2:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddOperationsPage()),
+                );
                 break;
               case 3:
                 Navigator.push(
@@ -773,7 +788,12 @@ class _HomePageState extends State<HomePage> {
               child: Transform.translate(
                 offset: Offset(0.0, 8.0),
                 child: FloatingActionButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddOperationsPage()),
+                    );
+                  },
                   backgroundColor: Color(0xFF10B981),
                   child: Icon(Icons.add, color: Colors.white, size: 32.0),
                   shape: CircleBorder(),
@@ -886,5 +906,79 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+}
+
+class PieChart extends StatelessWidget {
+  final Map<String, double> data;
+  final List<Color> colors;
+  final Color innerCircleColor;
+
+  PieChart({required this.data, required this.colors, required this.innerCircleColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(150, 150),
+      painter: PieChartPainter(data: data, colors: colors, innerCircleColor: innerCircleColor),
+    );
+  }
+}
+
+class PieChartPainter extends CustomPainter {
+  final Map<String, double> data;
+  final List<Color> colors;
+  final Color innerCircleColor;
+
+  PieChartPainter({required this.data, required this.colors, required this.innerCircleColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    double total = 0;
+    data.forEach((key, value) {
+      total += value;
+    });
+
+    double startAngle = -90;
+    int colorIndex = 0;
+
+    for (var entry in data.entries) {
+      final sweepAngle = (entry.value / total) * 360;
+      final paint = Paint()
+        ..style = PaintingStyle.fill
+        ..color = colors[colorIndex % colors.length];
+
+      canvas.drawArc(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        degreesToRadians(startAngle),
+        degreesToRadians(sweepAngle),
+        true,
+        paint,
+      );
+
+      startAngle += sweepAngle;
+      colorIndex++;
+    }
+
+    // Draw the inner circle
+    final innerCirclePaint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = innerCircleColor;
+
+    final innerCircleSize = size.width * 0.5;
+    canvas.drawCircle(
+      Offset(size.width / 2, size.height / 2),
+      innerCircleSize / 2,
+      innerCirclePaint,
+    );
+  }
+
+  double degreesToRadians(double degrees) {
+    return degrees * (3.1415926535897932 / 180);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'AddOperationsPage.dart';
 import 'AppLocalizations.dart';
+import 'OperationsPage.dart';
 import 'Theme_provider.dart';
 import 'Settings.dart';
 import 'main.dart';
@@ -137,7 +139,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
                 break;
               case 1:
-              // Navigate to Operations Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => OperationsPage()),
+                );
                 break;
               case 2:
                 break;
@@ -200,7 +205,12 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Transform.translate(
                 offset: Offset(0.0, 8.0),
                 child: FloatingActionButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddOperationsPage()),
+                    );
+                  },
                   backgroundColor: Color(0xFF10B981),
                   child: Icon(Icons.add, color: Colors.white, size: 32.0),
                   shape: CircleBorder(),

@@ -49,6 +49,8 @@ dependencies:
   permission_handler: ^11.3.1
   connectivity_plus: ^6.0.3
   http: ^1.2.1
+  image_picker: ^1.1.2
+  pie_chart: ^5.4.0
 
 
 
@@ -129,6 +131,29 @@ flutter:
     - assets/icons/cash-outline-dark-theme.png
     - assets/icons/halyk-logo.png
     - assets/icons/kaspi-logo.png
+    - assets/icons/pricetags-outline.png
+    - assets/icons/pricetags-outline-dark-theme.png
+    - assets/icons/document-text-outline.png
+    - assets/icons/document-text-outline-dark-theme.png
+    - assets/icons/Calendar.png
+    - assets/icons/Calendar-dark-theme.png
+    - assets/icons/family.png
+    - assets/icons/other.png
+    - assets/icons/pensia.png
+    - assets/icons/tv-bill.png
+    - assets/icons/water-bill.png
+    - assets/icons/stipendia.png
+    - assets/icons/pets.png
+    - assets/icons/phone-bill.png
+    - assets/icons/other-bills.png
+    - assets/icons/internet-bill.png
+    - assets/icons/gas-bill.png
+    - assets/icons/games.png
+    - assets/icons/food.png
+    - assets/icons/electricity-bill.png
+    - assets/icons/cloth.png
+    - assets/icons/car.png
+    - assets/icons/bad-habits.png
     - assets/lang/
 
 

@@ -58,6 +58,7 @@ class AppLocalizations {
       'no_sum': 'No sum available',
       'add_saving': 'Add Savings',
       'choose_icon': 'Choose Icon',
+      'choose_category': 'Choose Category',
       'edit_category': 'Edit Category',
       'total': 'Total',
       'included_in_total': 'Included in total',
@@ -79,7 +80,29 @@ class AppLocalizations {
       'no_changes': 'No changes to save',
       'changes_saved': 'Changes saved successfully',
       'delete_account': 'Delete account',
-      'profilepage': 'Profile'
+      'profilepage': 'Profile',
+      'add_category': 'Add category',
+      'plan_added': 'The plan has been successfully added to the database',
+      'plan_addition error': 'Error when adding the plan to the database',
+      'add_operation': 'Add an operation',
+      'income': 'Income',
+      'expense': 'Expense',
+      'add_details': 'Add details',
+      'add_description': "Add a description",
+      'hide_details': 'Hide details',
+      'main_income': 'Basic incomes',
+      'mainIncome': 'Main Income',
+      'addCategory': 'Add Category',
+      'work': 'Work',
+      'family': 'Family',
+      'scholarship': 'Scholarship',
+      'other': 'Other',
+      'choose_account': 'Choose account',
+      'no_transaction': 'There are no transactions',
+      'this_month': 'THIS MONTH',
+      'last_month': 'LAST MONTH',
+      'totals': 'Total',
+      'balance': 'Remains',
     },
     'ru': {
       'settings': 'Настройки аккаунта',
@@ -131,6 +154,7 @@ class AppLocalizations {
       'no_sum': 'Нет суммы',
       'add_saving': 'Добавить накопления',
       'choose_icon': 'Выберите иконку',
+      'choose_category': 'Выберите категорию',
       'edit_category': 'Редактирование категории',
       'total': 'Итого',
       'included_in_total': 'Включены в итог',
@@ -152,7 +176,29 @@ class AppLocalizations {
       'no_changes': 'Нет изменений для сохранения',
       'changes_saved': 'Изменения успешно сохранены',
       'delete_account': 'Удалить счет',
-      'profilepage': 'Профиль'
+      'profilepage': 'Профиль',
+      'add_category': 'Добавить категорию',
+      'plan_added': 'План успешно добавлен в базу данных',
+      'plan_addition error': 'Ошибка при добавлении плана в базу данных',
+      'add_operation': 'Добавить операцию',
+      'income': 'Доход',
+      'expense': 'Расход',
+      'add_details': 'Добавить детали',
+      'add_description': 'Добавить описание',
+      'hide_details': 'Скрыть детали',
+      'main_income': 'Основные доходы',
+      'mainIncome': 'Основные доходы',
+      'addCategory': 'Добавить категорию',
+      'work': 'Работа',
+      'family': 'Семья',
+      'scholarship': 'Стипендия',
+      'other': 'Другое',
+      'choose_account': 'Выберите счет',
+      'no_transaction': 'Нет транзакций',
+      'this_month': 'В ЭТОМ МЕСЯЦЕ',
+      'last_month': 'В ПРОШЛОМ МЕСЯЦЕ',
+      'totals': 'Итого',
+      'balance': 'Остаток',
     },
     'kk': {
       'settings': 'Тіркелгі параметрлері',
@@ -204,6 +250,7 @@ class AppLocalizations {
       'no_sum': 'Сома жоқ',
       'add_saving': 'Жинақ қосу',
       'choose_icon': 'Белгіні таңдау',
+      'choose_category': 'Санатты таңдау',
       'edit_category': 'Санатты өзгерту',
       'total': 'Барлығы',
       'included_in_total': 'Жалпыға енгізілген',
@@ -225,13 +272,103 @@ class AppLocalizations {
       'no_changes': 'Сақтайтын өзгерістер жоқ',
       'changes_saved': 'Өзгерістер сәтті сақталды',
       'delete_account': 'Есептік жазбаны жою',
-      'profilepage': 'Профиль'
+      'profilepage': 'Профиль',
+      'add_category': 'Санатты қосу',
+      'plan_added': 'Жоспар дерекқорға сәтті қосылды',
+      'plan_addition_error': 'Деректер базасына жоспар қосу кезіндегі қате',
+      'add_operation': 'Операцияны қосыңыз',
+      'income': 'Табыс',
+      'expense': 'Тұтыну',
+      'add_details': 'Мәліметтерді қосу',
+      'add_description': 'Сипаттама қосу',
+      'hide_details': 'Мәліметтерді жасыру',
+      'main_income': 'Негізгі кірістер',
+      'mainIncome': 'Негізгі табыс',
+      'addCategory': 'Санат қосу',
+      'work': 'Жұмыс',
+      'family': 'Отбасы',
+      'scholarship': 'Стипендия',
+      'other': 'Басқа',
+      'choose_account': 'Есептерді таңдаңыз',
+      'no_transaction': 'Tранзакциялар жоқ',
+      'this_month': 'ОСЫ АЙДА',
+      'last_month': 'ӨТКЕН АЙДА',
+      'totals': 'Барлығы',
+      'balance': 'Қалдық',
     },
   };
 
   final Locale locale;
 
   AppLocalizations(this.locale);
+
+  String get mainIncome {
+    return _localizedValues[locale.languageCode]!['mainIncome']!;
+  }
+
+  String get thisMonth {
+    return _localizedValues[locale.languageCode]!['this_month']!;
+  }
+  String get lastMonth {
+    return _localizedValues[locale.languageCode]!['last_month']!;
+  }
+  String get totals {
+    return _localizedValues[locale.languageCode]!['totals']!;
+  }
+  String get balance {
+    return _localizedValues[locale.languageCode]!['balance']!;
+  }
+
+  String get noTransactions {
+    return _localizedValues[locale.languageCode]!['no_transaction']!;
+  }
+
+  String get chooseAccount {
+    return _localizedValues[locale.languageCode]!['choose_account']!;
+  }
+
+  String get addCategory {
+    return _localizedValues[locale.languageCode]!['addCategory']!;
+  }
+
+  String translate(String key) {
+    return _localizedValues[locale.languageCode]![key] ?? key;
+  }
+
+  String get hideDetails {
+    return _localizedValues[locale.languageCode]!['hide_details']!;
+  }
+
+  String get enterDescription {
+    return _localizedValues[locale.languageCode]!['add_description']!;
+  }
+
+  String get addDetails {
+    return _localizedValues[locale.languageCode]!['add_details']!;
+  }
+  String get income {
+    return _localizedValues[locale.languageCode]!['income']!;
+  }
+
+  String get expense {
+    return _localizedValues[locale.languageCode]!['expense']!;
+  }
+
+  String get addOperation {
+    return _localizedValues[locale.languageCode]!['add_operation']!;
+  }
+
+  String get plan_added {
+    return _localizedValues[locale.languageCode]!['plan_added']!;
+  }
+
+  String get planAdditionError {
+    return _localizedValues[locale.languageCode]!['plan_addition_error']!;
+  }
+
+  String get chooseCategory {
+    return _localizedValues[locale.languageCode]!['choose_category']!;
+  }
 
   String get editAccount {
     return _localizedValues[locale.languageCode]!['edit_account']!;

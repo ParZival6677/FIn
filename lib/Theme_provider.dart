@@ -26,6 +26,12 @@ class MyThemes {
     iconTheme: IconThemeData(color: Colors.white),
     cardColor: Colors.grey[900],
     dividerColor: Colors.grey[600],
+    appBarTheme: AppBarTheme(
+      backgroundColor: Color(0xFF000000),
+      elevation: 0,
+      iconTheme: IconThemeData(color: Colors.white),
+      titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+    ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.black,
       selectedItemColor: Colors.white,
@@ -40,6 +46,12 @@ class MyThemes {
     iconTheme: IconThemeData(color: Colors.black),
     cardColor: Colors.white,
     dividerColor: Colors.grey[300],
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      iconTheme: IconThemeData(color: Colors.black),
+      titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
+    ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.grey[600],
       selectedItemColor: Colors.black,
@@ -54,6 +66,12 @@ class MyThemes {
     iconTheme: IconThemeData(color: Colors.white),
     cardColor: Color(0xFF9A10A8),
     dividerColor: Colors.grey[300],
+    appBarTheme: AppBarTheme(
+      backgroundColor: Color(0xFF000000),
+      elevation: 0,
+      iconTheme: IconThemeData(color: Colors.white),
+      titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+    ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.black,
       selectedItemColor: Colors.white,

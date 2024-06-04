@@ -62,7 +62,7 @@ class DatabaseHelper {
 
   Future<Database> initDatabase() async {
     String path = join(await getDatabasesPath(), 'finance_app.db');
-    return await openDatabase(path, version: 1, onCreate: _createDb);
+    return await openDatabase(path, version: 2, onCreate: _createDb, onUpgrade: _updateDb,);
   }
 
   void _createDb(Database db, int version) async {
@@ -90,6 +90,57 @@ class DatabaseHelper {
       iconPath TEXT
     )
   ''');
+    await db.execute('''
+      CREATE TABLE plans (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category TEXT NOT NULL,
+      amount REAL NOT NULL,
+      iconPath TEXT NOT NULL,
+      plannedAmount REAL NOT NULL,
+      createdDate TEXT NOT NULL
+    )
+    ''');
+    await db.execute('''
+    CREATE TABLE income (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      amount REAL,
+      category TEXT,
+      categoryIconPath TEXT,
+      date TEXT,
+      account TEXT,
+      accountIconPath TEXT,
+      description TEXT,
+      imagePath TEXT,
+      photoPath TEXT
+    )
+  ''');
+    await db.execute('''
+    CREATE TABLE expense (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      amount REAL,
+      category TEXT,
+      categoryIconPath TEXT,
+      date TEXT,
+      account TEXT,
+      accountIconPath TEXT,
+      description TEXT,
+      imagePath TEXT,
+      photoPath TEXT
+    )
+  ''');
+  }
+
+  Future<void> _updateDb(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE plans ADD COLUMN plannedAmount REAL');
+
+    }
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE plans ADD COLUMN createdDate TEXT NOT NULL DEFAULT ''2022-01-01T00:00:00.000Z''');
+
+      // Update existing rows with a default createdDate
+      await db.execute('UPDATE plans SET createdDate = "2022-01-01T00:00:00.000Z" WHERE createdDate IS NULL');
+    }
   }
 
 
@@ -387,5 +438,115 @@ class DatabaseHelper {
     List<Map<String, dynamic>> accounts = await db.query('accounts', where: 'id = ?', whereArgs: [id], limit: 1);
     return accounts.isNotEmpty ? accounts.first : {};
   }
+
+  Future<void> updateAccountBalance(String account, double amount, bool isIncome) async {
+    Database db = await database;
+    List<Map<String, dynamic>> accountData = await db.query('accounts', where: 'category = ?', whereArgs: [account]);
+
+    if (accountData.isNotEmpty) {
+      double currentBalance = accountData.first['amount'];
+      double updatedBalance = isIncome ? currentBalance + amount : currentBalance - amount;
+
+      await db.update('accounts', {'amount': updatedBalance}, where: 'category = ?', whereArgs: [account]);
+    }
+  }
+
+  // ================ Plans ================ //
+
+  Future<int> insertPlans(double plannedAmount, String category) async {
+    Database db = await database;
+
+    double amount = await getCategoryAmount(category);
+    String iconPath = await getCategoryIconsSavings(category);
+    if (iconPath.isEmpty) {
+      iconPath = await getAccountsCategoryIcons(category);
+    }
+
+    return await db.insert('plans', {
+      'category': category,
+      'amount': amount,
+      'iconPath': iconPath,
+      'plannedAmount': plannedAmount,
+      'createdDate': DateTime.now().toIso8601String(),
+    });
+  }
+
+
+
+
+  Future<List<Map<String, dynamic>>> getPlans() async {
+    Database db = await database;
+    DateTime thirtyDaysAgo = DateTime.now().subtract(Duration(days: 30));
+    String thirtyDaysAgoStr = thirtyDaysAgo.toIso8601String();
+
+    return await db.query(
+      'plans',
+      where: 'createdDate >= ?',
+      whereArgs: [thirtyDaysAgoStr],
+    );
+  }
+
+
+
+
+  Future<double> getCategoryAmount(String category) async {
+    final db = await database;
+    var result = await db.query('savings', where: 'category = ?',
+        whereArgs: [category],
+        columns: ['amount']);
+    if (result.isNotEmpty) {
+      return result.first['amount'] as double;
+    } else {
+      result = await db.query('accounts', where: 'category = ?',
+          whereArgs: [category],
+          columns: ['amount']);
+      if (result.isNotEmpty) {
+        return result.first['amount'] as double;
+      } else {
+        return 0.0;
+      }
+    }
+  }
+  Future<double> getAccountBalance(String account) async {
+    final db = await database;
+    final result = await db.query(
+      'accounts',
+      columns: ['amount'],
+      where: 'category = ?',
+      whereArgs: [account],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['amount'] as double;
+    } else {
+      throw Exception('Account not found');
+    }
+  }
+
+
+  // ============ incomes ============= //
+  Future<int> insertIncome(Map<String, dynamic> data) async {
+    Database db = await database;
+    return await db.insert('income', data);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllIncomes() async {
+    final db = await database;
+    return await db.query('income');
+  }
+
+
+
+  // ============ expences ============= //
+  Future<int> insertExpense(Map<String, dynamic> data) async {
+    Database db = await database;
+    return await db.insert('expense', data);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllExpenses() async {
+    final db = await database;
+    return await db.query('expense');
+  }
+
 
 }
